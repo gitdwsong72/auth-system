@@ -210,8 +210,12 @@ jobs:
         env:
           ENV: test
           DATABASE_URL: postgresql://auth_user:test_password@localhost:5432/auth_test?sslmode=disable
+          DB_PRIMARY_DB_URL: postgresql://auth_user:test_password@localhost:5432/auth_test?sslmode=disable
           REDIS_URL: redis://localhost:6379/0
           JWT_SECRET_KEY: test-secret-key-for-ci-cd-pipeline-only
+          JWT_ALGORITHM: HS256
+          JWT_PRIVATE_KEY_PATH: /tmp/nonexistent.pem
+          JWT_PUBLIC_KEY_PATH: /tmp/nonexistent.pem
         run: |
           cd auth-service
           pytest tests/integration/ \
