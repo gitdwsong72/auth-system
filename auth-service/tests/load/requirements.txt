@@ -1,0 +1,9 @@
+# Load Testing Dependencies
+# Install with: pip install -r tests/load/requirements.txt
+
+# Locust - Load testing framework
+locust>=2.20.0
+
+# Optional: For better reporting and visualization
+# matplotlib>=3.7.0
+# pandas>=2.0.0

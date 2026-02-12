@@ -1,0 +1,189 @@
+name: Performance Tests
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: "0 2 * * *"
+
+  workflow_dispatch:
+    inputs:
+      duration:
+        description: "Test duration (seconds)"
+        required: false
+        default: "60"
+      users:
+        description: "Concurrent users"
+        required: false
+        default: "100"
+
+jobs:
+  # ========================================
+  # Load Testing with Locust
+  # ========================================
+  load-test:
+    name: "Load Testing"
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: auth_test
+          POSTGRES_USER: auth_user
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          cd auth-service
+          pip install -e ".[dev]"
+          pip install locust
+
+      - name: Setup Database
+        env:
+          DATABASE_URL: postgresql://auth_user:test_password@localhost:5432/auth_test
+        run: |
+          cd auth-service
+          PGPASSWORD=test_password psql -h localhost -U auth_user -d auth_test -f scripts/init.sql
+
+      - name: Start Auth Service
+        env:
+          ENV: test
+          DATABASE_URL: postgresql://auth_user:test_password@localhost:5432/auth_test?sslmode=disable
+          REDIS_URL: redis://localhost:6379/0
+          JWT_SECRET_KEY: test-secret-key
+        run: |
+          cd auth-service
+          uvicorn src.main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+          curl -f http://localhost:8000/health
+
+      - name: Run Load Tests
+        run: |
+          cd auth-service/tests/load
+          locust \
+            --host http://localhost:8000 \
+            --users ${{ github.event.inputs.users || '100' }} \
+            --spawn-rate 10 \
+            --run-time ${{ github.event.inputs.duration || '60' }}s \
+            --headless \
+            --html=locust-report.html \
+            --csv=locust-stats
+
+      - name: Upload Load Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: load-test-results
+          path: |
+            auth-service/tests/load/locust-report.html
+            auth-service/tests/load/locust-stats*.csv
+
+      - name: Check Performance Thresholds
+        run: |
+          cd auth-service/tests/load
+          # Parse CSV and check if metrics meet thresholds
+          # Example: P95 latency < 200ms for login
+          python -c "
+          import csv
+          with open('locust-stats_stats.csv') as f:
+              reader = csv.DictReader(f)
+              for row in reader:
+                  if 'login' in row['Name']:
+                      p95 = float(row['95%'])
+                      if p95 > 200:
+                          print(f'❌ Login P95 latency {p95}ms exceeds 200ms threshold')
+                          exit(1)
+          print('✅ All performance thresholds met')
+          "
+
+  # ========================================
+  # System Performance Tests
+  # ========================================
+  system-performance:
+    name: "System Performance Tests"
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: auth_test
+          POSTGRES_USER: auth_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          cd auth-service
+          pip install -e ".[dev]"
+
+      - name: Setup Database
+        env:
+          DATABASE_URL: postgresql://auth_user:test_password@localhost:5432/auth_test
+        run: |
+          cd auth-service
+          PGPASSWORD=test_password psql -h localhost -U auth_user -d auth_test -f scripts/init.sql
+
+      - name: Run System Performance Tests
+        env:
+          ENV: test
+          DATABASE_URL: postgresql://auth_user:test_password@localhost:5432/auth_test?sslmode=disable
+          REDIS_URL: redis://localhost:6379/0
+          JWT_SECRET_KEY: test-secret-key
+        run: |
+          cd auth-service
+          pytest tests/system/test_performance.py \
+            -v \
+            --benchmark-json=benchmark.json
+
+      - name: Upload Benchmark Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results
+          path: auth-service/benchmark.json
+
+      - name: Compare with Baseline
+        run: |
+          echo "📊 Comparing with baseline performance..."
+          # Compare current results with baseline stored in repo or S3

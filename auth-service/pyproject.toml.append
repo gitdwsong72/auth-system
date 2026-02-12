@@ -1,0 +1,5 @@
+
+# Bandit configuration (security scanning)
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "venv"]
+skips = ["B101"]  # assert_used (OK in tests)

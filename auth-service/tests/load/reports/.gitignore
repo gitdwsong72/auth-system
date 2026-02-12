@@ -1,0 +1,7 @@
+# Ignore all load test reports
+*.html
+*.csv
+*.json
+
+# But keep this directory in git
+!.gitignore

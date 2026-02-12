@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.env
+.env.local
+.env.*.backup
+.DS_Store
+*.log
+
+# RSA keys for JWT
+keys/
+*.pem
+*.key
+*.p12

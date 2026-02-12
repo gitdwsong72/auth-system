@@ -1,0 +1,145 @@
+services:
+  # ===========================================
+  # Auth Service - FastAPI 인증/인가 API
+  # ===========================================
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_PRIMARY_DB_URL=postgresql://devuser:devpassword@auth-db:5432/authdb
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_ALGORITHM=RS256
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost:8080
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID:-}
+      - KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET:-}
+    depends_on:
+      auth-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./auth-service/src:/app/src
+    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+
+  # ===========================================
+  # Auth Admin - React 관리자 대시보드
+  # ===========================================
+  auth-admin:
+    build:
+      context: ./auth-admin
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    depends_on:
+      - auth-service
+    volumes:
+      - ./auth-admin/src:/app/src
+      - ./auth-admin/package.json:/app/package.json
+      - /app/node_modules
+
+  # ===========================================
+  # API Gateway - Kong (DB-less mode)
+  # ===========================================
+  gateway:
+    image: kong:3.6-alpine
+    ports:
+      - "8080:8000"       # Proxy
+      - "8443:8443"       # Proxy SSL
+      - "8001:8001"       # Admin API
+    environment:
+      - KONG_DATABASE=off
+      - KONG_DECLARATIVE_CONFIG=/kong/kong.yml
+      - KONG_PROXY_LISTEN=0.0.0.0:8000
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+      - KONG_LOG_LEVEL=info
+    volumes:
+      - ./gateway/kong:/kong:ro
+    depends_on:
+      - auth-service
+
+  # ===========================================
+  # PostgreSQL - 인증 전용 데이터베이스
+  # ===========================================
+  auth-db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=devpassword
+      - POSTGRES_DB=authdb
+      # Phase 2: PostgreSQL 최적화 설정
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=C
+    command: >
+      postgres
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c work_mem=8MB
+      -c maintenance_work_mem=128MB
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c wal_buffers=16MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+      - ./auth-service/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devuser -d authdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # ===========================================
+  # Redis - 토큰 블랙리스트, Rate Limit, 캐시
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    # Phase 2: Redis 최적화 설정
+    command: >
+      redis-server
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --appendonly yes
+      --appendfsync everysec
+      --maxclients 10000
+    volumes:
+      - auth_redis_data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  auth_postgres_data:
+  auth_redis_data:

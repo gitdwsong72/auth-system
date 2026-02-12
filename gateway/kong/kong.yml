@@ -1,0 +1,64 @@
+_format_version: "3.0"
+
+services:
+  # Auth Service - 인증/인가 API
+  - name: auth-service
+    url: http://auth-service:8000
+    routes:
+      - name: auth-routes
+        paths:
+          - /api/v1/auth
+          - /api/v1/users
+          - /api/v1/roles
+          - /api/v1/permissions
+          - /api/v1/oauth
+          - /api/v1/mfa
+          - /api/v1/api-keys
+        strip_path: false
+      - name: wellknown-routes
+        paths:
+          - /.well-known
+        strip_path: false
+      - name: health-route
+        paths:
+          - /health
+        strip_path: false
+
+  # Auth Admin - 관리자 대시보드
+  - name: auth-admin
+    url: http://auth-admin:5173
+    routes:
+      - name: admin-routes
+        paths:
+          - /admin
+        strip_path: false
+
+plugins:
+  # Global rate limiting
+  - name: rate-limiting
+    config:
+      minute: 60
+      policy: local
+
+  # CORS
+  - name: cors
+    config:
+      origins:
+        - "http://localhost:5173"
+        - "http://localhost:3000"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      headers:
+        - Authorization
+        - Content-Type
+      credentials: true
+
+  # Request/Response logging
+  - name: file-log
+    config:
+      path: /dev/stdout
+      reopen: true
