@@ -1,7 +1,7 @@
 """Transaction utilities unit tests"""
 
 import re
-from unittest.mock import AsyncMock, call
+from unittest.mock import AsyncMock, MagicMock, call
 
 import pytest
 
@@ -65,9 +65,7 @@ class TestTransaction:
     async def test_transaction_success(self):
         """Transaction should commit on success"""
         mock_conn = AsyncMock()
-        mock_transaction = AsyncMock()
-        mock_conn.transaction.return_value.__aenter__ = AsyncMock()
-        mock_conn.transaction.return_value.__aexit__ = AsyncMock()
+        mock_conn.transaction = MagicMock(return_value=AsyncMock())
 
         async with transaction(mock_conn):
             pass
@@ -77,8 +75,7 @@ class TestTransaction:
     async def test_transaction_with_isolation(self):
         """Transaction should use specified isolation level"""
         mock_conn = AsyncMock()
-        mock_conn.transaction.return_value.__aenter__ = AsyncMock()
-        mock_conn.transaction.return_value.__aexit__ = AsyncMock()
+        mock_conn.transaction = MagicMock(return_value=AsyncMock())
 
         async with transaction(mock_conn, isolation="serializable"):
             pass
@@ -88,8 +85,7 @@ class TestTransaction:
     async def test_transaction_rollback_on_error(self):
         """Transaction should rollback on exception"""
         mock_conn = AsyncMock()
-        mock_conn.transaction.return_value.__aenter__ = AsyncMock()
-        mock_conn.transaction.return_value.__aexit__ = AsyncMock()
+        mock_conn.transaction = MagicMock(return_value=AsyncMock())
 
         with pytest.raises(ValueError):
             async with transaction(mock_conn):

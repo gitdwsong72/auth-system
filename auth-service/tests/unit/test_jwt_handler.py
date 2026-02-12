@@ -506,64 +506,60 @@ class TestJWTHandlerRSAKeyValidation:
     def test_production_fails_without_rsa_private_key_file(self, tmp_path):
         """프로덕션 환경에서 RSA private key 파일이 없으면 실패."""
         # Arrange
+        from pydantic_core import ValidationError
+
         from src.shared.security.config import SecuritySettings
 
         public_key_file = tmp_path / "public.pem"
         public_key_file.write_text("-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----")
 
-        # Act & Assert
-        with pytest.raises(RuntimeError, match="RSA private key file not found in production"):
-            with patch("src.shared.security.config.SecuritySettings") as mock_settings_class:
-                mock_settings = SecuritySettings(
-                    env="production",
-                    jwt_secret_key="a" * 32,
-                    jwt_private_key_path=str(tmp_path / "nonexistent.pem"),
-                    jwt_public_key_path=str(public_key_file),
-                    redis_url="rediss://prod-redis:6379/0",
-                )
-                mock_settings_class.return_value = mock_settings
-
-                with patch("src.shared.security.jwt_handler.security_settings", mock_settings):
-                    JWTHandler()
+        # Act & Assert - SecuritySettings 생성 시 ValidationError 발생
+        with pytest.raises(ValidationError, match="RSA private key file not found"):
+            SecuritySettings(
+                env="production",
+                jwt_secret_key="a" * 32,
+                jwt_private_key_path=str(tmp_path / "nonexistent.pem"),
+                jwt_public_key_path=str(public_key_file),
+                redis_url="rediss://prod-redis:6379/0",
+            )
 
     def test_production_fails_without_rsa_public_key_file(self, tmp_path):
         """프로덕션 환경에서 RSA public key 파일이 없으면 실패."""
         # Arrange
+        from pydantic_core import ValidationError
+
         from src.shared.security.config import SecuritySettings
 
         private_key_file = tmp_path / "private.pem"
         private_key_file.write_text("-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----")
 
-        # Act & Assert
-        with pytest.raises(RuntimeError, match="RSA public key file not found in production"):
-            with patch("src.shared.security.config.SecuritySettings") as mock_settings_class:
-                mock_settings = SecuritySettings(
-                    env="production",
-                    jwt_secret_key="a" * 32,
-                    jwt_private_key_path=str(private_key_file),
-                    jwt_public_key_path=str(tmp_path / "nonexistent.pem"),
-                    redis_url="rediss://prod-redis:6379/0",
-                )
-                mock_settings_class.return_value = mock_settings
-
-                with patch("src.shared.security.jwt_handler.security_settings", mock_settings):
-                    JWTHandler()
+        # Act & Assert - SecuritySettings 생성 시 ValidationError 발생
+        with pytest.raises(ValidationError, match="RSA public key file not found"):
+            SecuritySettings(
+                env="production",
+                jwt_secret_key="a" * 32,
+                jwt_private_key_path=str(private_key_file),
+                jwt_public_key_path=str(tmp_path / "nonexistent.pem"),
+                redis_url="rediss://prod-redis:6379/0",
+            )
 
     def test_production_fails_when_rsa_keys_not_loaded(self, tmp_path):
-        """프로덕션 환경에서 RS256 알고리즘인데 키가 로드되지 않으면 실패."""
+        """프로덕션 환경에서 RSA 키 파일이 비어있으면 실패."""
         # Arrange
+        from pydantic_core import ValidationError
+
         from src.shared.security.config import SecuritySettings
 
-        # 파일은 존재하지만 읽기 실패하는 상황 시뮬레이션
+        # 파일은 존재하지만 빈 파일
         private_key_file = tmp_path / "private.pem"
         private_key_file.write_text("")  # 빈 파일
 
         public_key_file = tmp_path / "public.pem"
         public_key_file.write_text("")  # 빈 파일
 
-        # Act & Assert
-        with pytest.raises(RuntimeError, match="Production environment requires RSA keys"):
-            mock_settings = SecuritySettings(
+        # Act & Assert - SecuritySettings 생성 시 ValidationError 발생
+        with pytest.raises(ValidationError, match="RSA private key file is empty"):
+            SecuritySettings(
                 env="production",
                 jwt_secret_key="a" * 32,
                 jwt_algorithm="RS256",
@@ -571,16 +567,6 @@ class TestJWTHandlerRSAKeyValidation:
                 jwt_public_key_path=str(public_key_file),
                 redis_url="rediss://prod-redis:6379/0",
             )
-
-            with patch("src.shared.security.jwt_handler.security_settings", mock_settings):
-                # _load_keys가 빈 파일로 인해 키를 로드하지 못하도록 설정
-                with patch.object(
-                    JWTHandler,
-                    "_load_keys",
-                    side_effect=lambda self: setattr(self, "_private_key", None)
-                    or setattr(self, "_public_key", None),
-                ):
-                    JWTHandler()
 
     def test_development_allows_missing_rsa_keys(self, mock_jwt_settings):
         """개발 환경에서는 RSA 키가 없어도 HS256으로 fallback."""
