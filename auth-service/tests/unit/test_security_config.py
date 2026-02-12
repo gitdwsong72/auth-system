@@ -1,7 +1,5 @@
 """보안 설정 검증 테스트."""
 
-from pathlib import Path
-
 import pytest
 
 from src.shared.security.config import SecuritySettings
@@ -26,9 +24,7 @@ class TestSecuritySettingsProductionValidation:
         """프로덕션 환경에서 RSA private key 파일이 존재해야 함."""
         # Arrange
         public_key_file = tmp_path / "public.pem"
-        public_key_file.write_text(
-            "-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----"
-        )
+        public_key_file.write_text("-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----")
 
         # Act & Assert
         with pytest.raises(ValueError, match="RSA private key file not found"):
@@ -44,9 +40,7 @@ class TestSecuritySettingsProductionValidation:
         """프로덕션 환경에서 RSA public key 파일이 존재해야 함."""
         # Arrange
         private_key_file = tmp_path / "private.pem"
-        private_key_file.write_text(
-            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----"
-        )
+        private_key_file.write_text("-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----")
 
         # Act & Assert
         with pytest.raises(ValueError, match="RSA public key file not found"):
@@ -65,9 +59,7 @@ class TestSecuritySettingsProductionValidation:
         private_key_file.write_text("invalid key format")
 
         public_key_file = tmp_path / "public.pem"
-        public_key_file.write_text(
-            "-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----"
-        )
+        public_key_file.write_text("-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----")
 
         # Act & Assert
         with pytest.raises(ValueError, match="RSA private key file format invalid"):
@@ -83,9 +75,7 @@ class TestSecuritySettingsProductionValidation:
         """프로덕션 환경에서 RSA public key가 PEM 형식이어야 함."""
         # Arrange
         private_key_file = tmp_path / "private.pem"
-        private_key_file.write_text(
-            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----"
-        )
+        private_key_file.write_text("-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----")
 
         public_key_file = tmp_path / "public.pem"
         public_key_file.write_text("invalid key format")
@@ -107,9 +97,7 @@ class TestSecuritySettingsProductionValidation:
         private_key_file.write_text("")  # 빈 파일
 
         public_key_file = tmp_path / "public.pem"
-        public_key_file.write_text(
-            "-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----"
-        )
+        public_key_file.write_text("-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----")
 
         # Act & Assert
         with pytest.raises(ValueError, match="RSA private key file is empty"):
@@ -125,9 +113,7 @@ class TestSecuritySettingsProductionValidation:
         """프로덕션 환경에서 빈 RSA public key 파일 거부."""
         # Arrange
         private_key_file = tmp_path / "private.pem"
-        private_key_file.write_text(
-            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----"
-        )
+        private_key_file.write_text("-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----")
 
         public_key_file = tmp_path / "public.pem"
         public_key_file.write_text("")  # 빈 파일
@@ -146,13 +132,9 @@ class TestSecuritySettingsProductionValidation:
         """프로덕션 환경에서 강력한 JWT secret 필요 (32바이트 이상)."""
         # Arrange - RSA 키 파일 생성
         private_key_file = tmp_path / "private.pem"
-        private_key_file.write_text(
-            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----"
-        )
+        private_key_file.write_text("-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----")
         public_key_file = tmp_path / "public.pem"
-        public_key_file.write_text(
-            "-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----"
-        )
+        public_key_file.write_text("-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----")
 
         # Act & Assert
         with pytest.raises(ValueError, match="at least 32 bytes"):
@@ -168,13 +150,9 @@ class TestSecuritySettingsProductionValidation:
         """프로덕션 환경에서 약한 JWT secret 패턴 거부."""
         # Arrange - RSA 키 파일 생성
         private_key_file = tmp_path / "private.pem"
-        private_key_file.write_text(
-            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----"
-        )
+        private_key_file.write_text("-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----")
         public_key_file = tmp_path / "public.pem"
-        public_key_file.write_text(
-            "-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----"
-        )
+        public_key_file.write_text("-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----")
 
         weak_secrets = [
             "dev-secret-key-that-is-long-enough-32bytes",
@@ -198,13 +176,9 @@ class TestSecuritySettingsProductionValidation:
         """프로덕션 환경에서 localhost Redis 사용 금지."""
         # Arrange - RSA 키 파일 생성
         private_key_file = tmp_path / "private.pem"
-        private_key_file.write_text(
-            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----"
-        )
+        private_key_file.write_text("-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----")
         public_key_file = tmp_path / "public.pem"
-        public_key_file.write_text(
-            "-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----"
-        )
+        public_key_file.write_text("-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----")
 
         # Act & Assert
         with pytest.raises(ValueError, match="cannot use localhost Redis"):
@@ -220,13 +194,9 @@ class TestSecuritySettingsProductionValidation:
         """프로덕션 환경에서 Redis TLS 필수."""
         # Arrange - RSA 키 파일 생성
         private_key_file = tmp_path / "private.pem"
-        private_key_file.write_text(
-            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----"
-        )
+        private_key_file.write_text("-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----")
         public_key_file = tmp_path / "public.pem"
-        public_key_file.write_text(
-            "-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----"
-        )
+        public_key_file.write_text("-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----")
 
         # Act & Assert
         with pytest.raises(ValueError, match="Redis must use TLS"):

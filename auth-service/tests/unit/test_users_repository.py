@@ -155,9 +155,7 @@ class TestGetUserList:
         mock_connection.fetch.return_value = expected_users
 
         with patch("src.domains.users.repository.sql.load_query") as mock_sql:
-            mock_sql.return_value = (
-                "SELECT * FROM users WHERE is_active = $4 LIMIT $2 OFFSET $1"
-            )
+            mock_sql.return_value = "SELECT * FROM users WHERE is_active = $4 LIMIT $2 OFFSET $1"
 
             # Act
             result = await repository.get_user_list(
@@ -441,9 +439,7 @@ class TestChangePassword:
         mock_connection.fetchrow.return_value = expected_user
 
         with patch("src.domains.users.repository.sql.load_command") as mock_sql:
-            mock_sql.return_value = (
-                "UPDATE users SET password_hash = $2 WHERE id = $1 RETURNING *"
-            )
+            mock_sql.return_value = "UPDATE users SET password_hash = $2 WHERE id = $1 RETURNING *"
 
             # Act
             result = await repository.change_password(
@@ -460,14 +456,10 @@ class TestChangePassword:
         mock_connection.fetchrow.return_value = None
 
         with patch("src.domains.users.repository.sql.load_command") as mock_sql:
-            mock_sql.return_value = (
-                "UPDATE users SET password_hash = $2 WHERE id = $1 RETURNING *"
-            )
+            mock_sql.return_value = "UPDATE users SET password_hash = $2 WHERE id = $1 RETURNING *"
 
             # Act
-            result = await repository.change_password(
-                mock_connection, sample_user_id, "new_hash"
-            )
+            result = await repository.change_password(mock_connection, sample_user_id, "new_hash")
 
             # Assert
             assert result is None
@@ -634,9 +626,7 @@ class TestILIKESanitization:
             mock_sql.return_value = "SELECT * FROM users"
 
             # Act - %와 _ 모두 포함
-            await repository.get_user_list_with_count(
-                mock_connection, 0, 10, search="test%_attack"
-            )
+            await repository.get_user_list_with_count(mock_connection, 0, 10, search="test%_attack")
 
             # Assert - 둘 다 escape되었는지 확인
             call_args = mock_connection.fetch.call_args[0]

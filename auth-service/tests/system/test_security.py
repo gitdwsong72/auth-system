@@ -113,9 +113,9 @@ class TestSQLInjectionDefense:
 
             # Assert - Should return 401 Unauthorized, 422 Validation Error, or 429 Rate Limit
             # NOT 500 Internal Server Error (which would indicate SQL injection vulnerability)
-            assert response.status_code in [401, 422, 429], (
-                f"SQL injection payload '{payload}' returned unexpected status: {response.status_code}"
-            )
+            assert (
+                response.status_code in [401, 422, 429]
+            ), f"SQL injection payload '{payload}' returned unexpected status: {response.status_code}"
 
             # Skip further checks if rate limited
             if response.status_code == 429:
@@ -151,9 +151,9 @@ class TestSQLInjectionDefense:
 
             # Assert - Should fail validation (422) or return bad request (400)
             # NOT 500 Internal Server Error
-            assert response.status_code in [400, 422], (
-                f"SQL injection payload '{payload}' returned unexpected status: {response.status_code}"
-            )
+            assert (
+                response.status_code in [400, 422]
+            ), f"SQL injection payload '{payload}' returned unexpected status: {response.status_code}"
 
     async def test_sql_injection_in_query_parameters(
         self, client: AsyncClient, auth_headers: dict[str, str]
@@ -545,7 +545,9 @@ class TestAuthenticationSecurity:
         # Assert
         assert response.status_code == 401
 
-    async def test_expired_token_rejected(self, client: AsyncClient, test_user_data: dict[str, Any]):
+    async def test_expired_token_rejected(
+        self, client: AsyncClient, test_user_data: dict[str, Any]
+    ):
         """Test expired tokens are rejected."""
         # Note: This would require creating a token with past expiration
         # For now, test that authentication flow properly validates exp claim

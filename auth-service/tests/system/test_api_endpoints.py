@@ -89,7 +89,7 @@ class TestHealthEndpoint:
             actual_services
         ), f"Missing services: {required_services - actual_services}"
 
-        print(f"✓ Response structure validated")
+        print("✓ Response structure validated")
         print(f"✓ All required services present: {', '.join(required_services)}")
 
 
@@ -106,9 +106,11 @@ class TestSolidCacheMetricsEndpoint:
         assert response.status_code == 422, f"Expected 422, got {response.status_code}"
 
         data = response.json()
-        assert "error" in data or "detail" in data, "Error response should contain 'error' or 'detail'"
+        assert (
+            "error" in data or "detail" in data
+        ), "Error response should contain 'error' or 'detail'"
 
-        print(f"✓ Unauthorized access properly rejected")
+        print("✓ Unauthorized access properly rejected")
 
     @pytest.mark.asyncio
     async def test_solid_cache_metrics_with_auth(
@@ -123,13 +125,18 @@ class TestSolidCacheMetricsEndpoint:
         response_time = time.time() - start_time
 
         # Assert - HTTP 상태 코드 (권한 부족 또는 성공)
-        assert response.status_code in [200, 403], f"Expected 200 or 403, got {response.status_code}"
+        assert response.status_code in [
+            200,
+            403,
+        ], f"Expected 200 or 403, got {response.status_code}"
 
         if response.status_code == 403:
             # 권한 부족 - 정상 동작
             data = response.json()
-            assert "error" in data or "detail" in data, "Error response should contain 'error' or 'detail'"
-            print(f"✓ Forbidden access (insufficient permissions)")
+            assert (
+                "error" in data or "detail" in data
+            ), "Error response should contain 'error' or 'detail'"
+            print("✓ Forbidden access (insufficient permissions)")
             return
 
         # Assert - 성공 응답 (system:metrics 권한 보유 시)
@@ -139,9 +146,7 @@ class TestSolidCacheMetricsEndpoint:
         # Assert - 응답 스키마
         required_keys = {"total_entries", "expired_entries", "total_size_bytes", "total_size_kb"}
         actual_keys = set(data.keys())
-        assert required_keys.issubset(
-            actual_keys
-        ), f"Missing keys: {required_keys - actual_keys}"
+        assert required_keys.issubset(actual_keys), f"Missing keys: {required_keys - actual_keys}"
 
         # Assert - 데이터 타입
         assert isinstance(data["total_entries"], int), "total_entries should be integer"
@@ -176,9 +181,11 @@ class TestDBPoolMetricsEndpoint:
         assert response.status_code == 422, f"Expected 422, got {response.status_code}"
 
         data = response.json()
-        assert "error" in data or "detail" in data, "Error response should contain 'error' or 'detail'"
+        assert (
+            "error" in data or "detail" in data
+        ), "Error response should contain 'error' or 'detail'"
 
-        print(f"✓ Unauthorized access properly rejected")
+        print("✓ Unauthorized access properly rejected")
 
     @pytest.mark.asyncio
     async def test_db_pool_metrics_with_auth(
@@ -193,13 +200,18 @@ class TestDBPoolMetricsEndpoint:
         response_time = time.time() - start_time
 
         # Assert - HTTP 상태 코드 (권한 부족 또는 성공)
-        assert response.status_code in [200, 403], f"Expected 200 or 403, got {response.status_code}"
+        assert response.status_code in [
+            200,
+            403,
+        ], f"Expected 200 or 403, got {response.status_code}"
 
         if response.status_code == 403:
             # 권한 부족 - 정상 동작
             data = response.json()
-            assert "error" in data or "detail" in data, "Error response should contain 'error' or 'detail'"
-            print(f"✓ Forbidden access (insufficient permissions)")
+            assert (
+                "error" in data or "detail" in data
+            ), "Error response should contain 'error' or 'detail'"
+            print("✓ Forbidden access (insufficient permissions)")
             return
 
         # Assert - 성공 응답 (system:metrics 권한 보유 시)
@@ -218,9 +230,7 @@ class TestDBPoolMetricsEndpoint:
             "active_connections",
         }
         actual_keys = set(primary.keys())
-        assert required_keys.issubset(
-            actual_keys
-        ), f"Missing keys: {required_keys - actual_keys}"
+        assert required_keys.issubset(actual_keys), f"Missing keys: {required_keys - actual_keys}"
 
         # Assert - 데이터 타입
         assert isinstance(primary["size"], int), "size should be integer"
@@ -239,9 +249,7 @@ class TestDBPoolMetricsEndpoint:
         assert primary["active_connections"] >= 0, "active_connections should be non-negative"
 
         # Assert - 논리적 관계
-        assert (
-            primary["size"] <= primary["max_size"]
-        ), "size should not exceed max_size"
+        assert primary["size"] <= primary["max_size"], "size should not exceed max_size"
         assert (
             primary["free_connections"] + primary["active_connections"] == primary["size"]
         ), "free + active should equal total size"
@@ -286,10 +294,10 @@ class TestDBPoolMetricsEndpoint:
                 actual_keys
             ), f"Missing replica keys: {required_keys - actual_keys}"
 
-            print(f"✓ Replica pool configured")
+            print("✓ Replica pool configured")
             print(f"✓ Replica size: {replica['size']}/{replica['max_size']}")
         else:
-            print(f"✓ No replica pool configured (single DB mode)")
+            print("✓ No replica pool configured (single DB mode)")
 
 
 class TestEndpointPerformance:

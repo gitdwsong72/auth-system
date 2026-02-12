@@ -11,7 +11,6 @@
 """
 
 import asyncio
-from datetime import datetime, timedelta
 
 import asyncpg
 import pytest
@@ -277,9 +276,7 @@ class TestSolidCacheDelete:
         assert result is None, "삭제된 키는 조회되지 않아야 함"
 
     @pytest.mark.asyncio
-    async def test_delete_pattern_multiple_matches(
-        self, solid_cache: SolidCache
-    ) -> None:
+    async def test_delete_pattern_multiple_matches(self, solid_cache: SolidCache) -> None:
         """delete_pattern으로 여러 키 동시 삭제."""
         # Arrange
         keys = [
@@ -305,9 +302,7 @@ class TestSolidCacheDelete:
             assert await solid_cache.get(key) is None, f"{key}는 삭제되어야 함"
 
         # 삭제되지 않은 키 확인
-        assert (
-            await solid_cache.get(keys[3]) == "test"
-        ), "permissions:role:1은 삭제되지 않아야 함"
+        assert await solid_cache.get(keys[3]) == "test", "permissions:role:1은 삭제되지 않아야 함"
 
     @pytest.mark.asyncio
     async def test_delete_pattern_no_matches(self, solid_cache: SolidCache) -> None:
@@ -404,9 +399,7 @@ class TestSolidCacheStats:
         assert stats["total_size_bytes"] > 0, "총 크기는 0보다 커야 함"
 
     @pytest.mark.asyncio
-    async def test_get_stats_with_expired_entries(
-        self, solid_cache: SolidCache
-    ) -> None:
+    async def test_get_stats_with_expired_entries(self, solid_cache: SolidCache) -> None:
         """만료된 엔트리가 포함된 통계 조회."""
         # Arrange
         expired_keys = ["stats:expired:1", "stats:expired:2"]
@@ -464,9 +457,7 @@ class TestSolidCacheEdgeCases:
         assert result == value, "특수 문자도 정상적으로 저장되어야 함"
 
     @pytest.mark.asyncio
-    async def test_set_json_with_nested_structure(
-        self, solid_cache: SolidCache
-    ) -> None:
+    async def test_set_json_with_nested_structure(self, solid_cache: SolidCache) -> None:
         """중첩된 JSON 구조 저장."""
         # Arrange
         key = "test:json:nested"

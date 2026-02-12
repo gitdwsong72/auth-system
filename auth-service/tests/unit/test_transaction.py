@@ -1,10 +1,9 @@
 """Transaction utilities unit tests"""
 
 import re
-from unittest.mock import AsyncMock, call, patch
+from unittest.mock import AsyncMock, call
 
 import pytest
-import pytest_asyncio
 
 from src.shared.database.transaction import (
     _quote_identifier,

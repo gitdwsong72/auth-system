@@ -6,15 +6,16 @@ POST /api/v1/auth/register (DB 쓰기 - 느림)
 """
 
 import asyncio
-import httpx
-import time
 import random
 import string
+import time
+
+import httpx
 
 
 def random_email():
     """랜덤 이메일 생성"""
-    random_str = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+    random_str = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
     return f"test_{random_str}@example.com"
 
 
@@ -27,9 +28,9 @@ async def register_user(client: httpx.AsyncClient, index: int) -> dict:
             json={
                 "email": random_email(),
                 "password": "TestPass123!",
-                "username": f"testuser_{index}"
+                "username": f"testuser_{index}",
             },
-            timeout=30.0
+            timeout=30.0,
         )
         duration = time.time() - start
 
@@ -43,7 +44,7 @@ async def register_user(client: httpx.AsyncClient, index: int) -> dict:
             "wait_time": float(wait_time) if wait_time else 0,
             "queue_status": queue_status,
         }
-    except asyncio.TimeoutError:
+    except TimeoutError:
         return {
             "index": index,
             "status": "timeout",
@@ -73,12 +74,14 @@ async def test_heavy_load(num_requests: int):
     # 결과 분석
     success = [r for r in results if r.get("status") == 201]  # 회원가입 성공
     errors_503 = [r for r in results if r.get("status") == 503]
-    errors_other = [r for r in results if isinstance(r.get("status"), int) and r.get("status") not in [201, 503]]
+    errors_other = [
+        r for r in results if isinstance(r.get("status"), int) and r.get("status") not in [201, 503]
+    ]
     waited = [r for r in results if r.get("wait_time", 0) > 0]
 
-    print(f"\n📊 결과:")
+    print("\n📊 결과:")
     print(f"  총 소요 시간: {total_time:.2f}초")
-    print(f"\n  응답 분포:")
+    print("\n  응답 분포:")
     print(f"    ✅ 성공 (201): {len(success)}개")
     print(f"    ❌ 과부하 거부 (503): {len(errors_503)}개")
     if errors_other:
@@ -91,20 +94,20 @@ async def test_heavy_load(num_requests: int):
         for r in errors_503:
             status = r.get("queue_status", "unknown")
             queue_statuses[status] = queue_statuses.get(status, 0) + 1
-        print(f"\n  503 거부 사유:")
+        print("\n  503 거부 사유:")
         for status, count in queue_statuses.items():
             print(f"    {status}: {count}개")
 
     if success:
         durations = [r["duration"] for r in success]
-        print(f"\n  응답 시간 (성공 요청):")
+        print("\n  응답 시간 (성공 요청):")
         print(f"    평균: {sum(durations)/len(durations):.3f}초")
         print(f"    최소: {min(durations):.3f}초")
         print(f"    최대: {max(durations):.3f}초")
 
     if waited:
         wait_times = [r["wait_time"] for r in waited]
-        print(f"\n  대기 시간 (대기열 통과):")
+        print("\n  대기 시간 (대기열 통과):")
         print(f"    평균: {sum(wait_times)/len(wait_times):.3f}초")
         print(f"    최소: {min(wait_times):.3f}초")
         print(f"    최대: {max(wait_times):.3f}초")
@@ -113,7 +116,7 @@ async def test_heavy_load(num_requests: int):
     success_rate = len(success) / num_requests * 100
     rejection_rate = len(errors_503) / num_requests * 100
 
-    print(f"\n📈 통계:")
+    print("\n📈 통계:")
     print(f"  성공률: {success_rate:.1f}%")
     print(f"  거부율: {rejection_rate:.1f}%")
     print(f"  처리량: {len(success) / total_time:.1f} req/s")
@@ -121,30 +124,29 @@ async def test_heavy_load(num_requests: int):
     # 예상 동작 판정
     if num_requests <= 80:
         if rejection_rate == 0:
-            print(f"\n  ✅ PASS: 임계치 이하, 모두 처리됨")
+            print("\n  ✅ PASS: 임계치 이하, 모두 처리됨")
         else:
-            print(f"\n  ⚠️  UNEXPECTED: 임계치 이하인데 거부 발생")
+            print("\n  ⚠️  UNEXPECTED: 임계치 이하인데 거부 발생")
 
     elif num_requests <= 580:
         if success_rate >= 90:
-            print(f"\n  ✅ PASS: 대부분 대기 후 처리됨")
+            print("\n  ✅ PASS: 대부분 대기 후 처리됨")
             if len(waited) > 0:
-                print(f"       대기열 시스템 정상 동작!")
+                print("       대기열 시스템 정상 동작!")
         else:
-            print(f"\n  ⚠️  일부 거부됨 (시스템 보호 동작)")
+            print("\n  ⚠️  일부 거부됨 (시스템 보호 동작)")
 
+    elif rejection_rate > 0:
+        print("\n  ✅ PASS: 과부하 보호 동작 확인")
+        print("       시스템이 안정적으로 보호됨")
     else:
-        if rejection_rate > 0:
-            print(f"\n  ✅ PASS: 과부하 보호 동작 확인")
-            print(f"       시스템이 안정적으로 보호됨")
-        else:
-            print(f"\n  ⚠️  UNEXPECTED: 과부하인데 거부 없음")
+        print("\n  ⚠️  UNEXPECTED: 과부하인데 거부 없음")
 
 
 async def main():
-    print("="*60)
+    print("=" * 60)
     print("🚀 Backpressure 실제 API 테스트")
-    print("="*60)
+    print("=" * 60)
     print("\n⚙️  현재 설정:")
     print("   MAX_CONCURRENT: 80")
     print("   QUEUE_CAPACITY: 500")
@@ -168,7 +170,7 @@ async def main():
 
     print(f"\n{'='*60}")
     print("✅ 테스트 완료")
-    print("="*60)
+    print("=" * 60)
     print("\n💡 Backpressure 효과:")
     print("  1. 시스템이 처리 가능한 만큼만 받아들임")
     print("  2. 초과 요청은 대기열에서 순차 처리")

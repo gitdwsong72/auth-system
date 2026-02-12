@@ -1,7 +1,8 @@
 """Unit tests for security audit logger."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 
 from src.shared.security.audit_logger import (
     AuditAction,
@@ -63,10 +64,12 @@ class TestAuditLogger:
         """Test extracting client IP and user agent from request."""
         request = MagicMock()
         request.client.host = "192.168.1.100"
-        request.headers.get = MagicMock(side_effect=lambda key: {
-            "X-Forwarded-For": "203.0.113.1, 192.168.1.1",
-            "User-Agent": "Mozilla/5.0",
-        }.get(key))
+        request.headers.get = MagicMock(
+            side_effect=lambda key: {
+                "X-Forwarded-For": "203.0.113.1, 192.168.1.1",
+                "User-Agent": "Mozilla/5.0",
+            }.get(key)
+        )
 
         ip_address, user_agent = AuditLogger.extract_client_info(request)
 
@@ -77,9 +80,11 @@ class TestAuditLogger:
         """Test extracting client info without X-Forwarded-For header."""
         request = MagicMock()
         request.client.host = "192.168.1.100"
-        request.headers.get = MagicMock(side_effect=lambda key: {
-            "User-Agent": "curl/7.68.0",
-        }.get(key))
+        request.headers.get = MagicMock(
+            side_effect=lambda key: {
+                "User-Agent": "curl/7.68.0",
+            }.get(key)
+        )
 
         ip_address, user_agent = AuditLogger.extract_client_info(request)
 

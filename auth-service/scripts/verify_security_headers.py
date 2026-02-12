@@ -7,7 +7,6 @@ Run this script with the server running to check security posture.
 """
 
 import sys
-from typing import Dict
 
 import httpx
 

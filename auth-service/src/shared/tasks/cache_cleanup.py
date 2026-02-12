@@ -12,7 +12,7 @@
 """
 
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from src.shared.logging import get_logger
 
@@ -116,7 +116,7 @@ class CacheCleanupTask:
             logger.info(
                 "cache_cleanup_executed",
                 deleted_count=deleted_count,
-                timestamp=datetime.now(timezone.utc).isoformat(),
+                timestamp=datetime.now(UTC).isoformat(),
             )
 
         except Exception as e:

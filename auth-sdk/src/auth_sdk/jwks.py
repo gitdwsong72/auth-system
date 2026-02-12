@@ -5,7 +5,6 @@ JWT 토큰의 서명을 로컬에서 검증하는 기능을 제공합니다.
 """
 
 import logging
-import time
 from typing import Any
 
 import httpx
@@ -50,9 +49,7 @@ class JWKSClient:
     ) -> None:
         self.jwks_url = jwks_url
         self.http_timeout = http_timeout
-        self._cache: TTLCache[str, dict[str, Any]] = TTLCache(
-            maxsize=1, ttl=cache_ttl
-        )
+        self._cache: TTLCache[str, dict[str, Any]] = TTLCache(maxsize=1, ttl=cache_ttl)
 
     async def fetch_jwks(self) -> dict[str, Any]:
         """JWKS 엔드포인트에서 키 세트를 가져옵니다.
@@ -78,13 +75,9 @@ class JWKSClient:
                 response.raise_for_status()
                 jwks_data: dict[str, Any] = response.json()
         except httpx.ConnectError as e:
-            raise AuthServiceUnavailableError(
-                "JWKS 엔드포인트에 연결할 수 없습니다"
-            ) from e
+            raise AuthServiceUnavailableError("JWKS 엔드포인트에 연결할 수 없습니다") from e
         except httpx.TimeoutException as e:
-            raise AuthServiceUnavailableError(
-                "JWKS 요청 시간이 초과되었습니다"
-            ) from e
+            raise AuthServiceUnavailableError("JWKS 요청 시간이 초과되었습니다") from e
         except httpx.HTTPStatusError as e:
             raise AuthServiceUnavailableError(
                 f"JWKS 요청 실패: HTTP {e.response.status_code}"
@@ -96,9 +89,7 @@ class JWKSClient:
 
         return jwks_data
 
-    def _get_signing_key(
-        self, token: str, jwks: dict[str, Any]
-    ) -> dict[str, Any]:
+    def _get_signing_key(self, token: str, jwks: dict[str, Any]) -> dict[str, Any]:
         """JWT 토큰의 헤더에서 kid를 추출하여 대응하는 서명 키를 찾습니다.
 
         Args:
@@ -125,13 +116,9 @@ class JWKSClient:
             if key.get("kid") == kid:
                 return key
 
-        raise InvalidTokenError(
-            f"토큰의 kid '{kid}'에 대응하는 키를 찾을 수 없습니다"
-        )
+        raise InvalidTokenError(f"토큰의 kid '{kid}'에 대응하는 키를 찾을 수 없습니다")
 
-    async def verify_token(
-        self, token: str, algorithm: str = "RS256"
-    ) -> TokenPayload:
+    async def verify_token(self, token: str, algorithm: str = "RS256") -> TokenPayload:
         """JWT 토큰을 로컬에서 검증하고 페이로드를 반환합니다.
 
         JWKS에서 공개키를 가져와 토큰의 서명을 검증하고,
@@ -162,8 +149,6 @@ class JWKSClient:
         except ExpiredSignatureError as e:
             raise TokenExpiredError("토큰이 만료되었습니다") from e
         except JWTError as e:
-            raise InvalidTokenError(
-                f"토큰 검증에 실패했습니다: {e}"
-            ) from e
+            raise InvalidTokenError(f"토큰 검증에 실패했습니다: {e}") from e
 
         return TokenPayload.model_validate(payload)

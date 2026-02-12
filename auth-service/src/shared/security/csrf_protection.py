@@ -5,7 +5,6 @@ JWT 기반 API에서 추가 보호 계층 제공
 """
 
 import secrets
-from typing import Optional
 
 from fastapi import Header, HTTPException, status
 
@@ -24,8 +23,8 @@ class CSRFProtection:
 
     @staticmethod
     def validate_token(
-        token_from_header: Optional[str],
-        token_from_cookie: Optional[str],
+        token_from_header: str | None,
+        token_from_cookie: str | None,
     ) -> None:
         """CSRF 토큰 검증 (Double Submit Cookie 패턴)
 
@@ -58,8 +57,8 @@ class CSRFProtection:
 
 
 def require_csrf_token(
-    x_csrf_token: Optional[str] = Header(None, alias="X-CSRF-Token"),
-    csrf_token_cookie: Optional[str] = Header(None, alias="Cookie"),
+    x_csrf_token: str | None = Header(None, alias="X-CSRF-Token"),
+    csrf_token_cookie: str | None = Header(None, alias="Cookie"),
 ) -> None:
     """CSRF 토큰 필수 의존성
 

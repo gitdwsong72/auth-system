@@ -106,7 +106,7 @@ async def test_basic_operations(pool: asyncpg.Pool) -> dict:
         if cached_data == data:
             results["get_json"] = "✅ PASS"
         else:
-            results["get_json"] = f"❌ FAIL: Data mismatch"
+            results["get_json"] = "❌ FAIL: Data mismatch"
     except Exception as e:
         results["get_json"] = f"❌ FAIL: {e}"
 
@@ -116,7 +116,7 @@ async def test_basic_operations(pool: asyncpg.Pool) -> dict:
         if exists:
             results["exists"] = "✅ PASS"
         else:
-            results["exists"] = f"❌ FAIL: Key should exist"
+            results["exists"] = "❌ FAIL: Key should exist"
     except Exception as e:
         results["exists"] = f"❌ FAIL: {e}"
 
@@ -137,7 +137,7 @@ async def test_basic_operations(pool: asyncpg.Pool) -> dict:
         if not exists:
             results["delete"] = "✅ PASS"
         else:
-            results["delete"] = f"❌ FAIL: Key should not exist after delete"
+            results["delete"] = "❌ FAIL: Key should not exist after delete"
     except Exception as e:
         results["delete"] = f"❌ FAIL: {e}"
 
@@ -161,7 +161,7 @@ async def test_basic_operations(pool: asyncpg.Pool) -> dict:
         if "total_entries" in stats and "expired_entries" in stats:
             results["get_stats"] = f"✅ PASS (Entries: {stats['total_entries']})"
         else:
-            results["get_stats"] = f"❌ FAIL: Invalid stats format"
+            results["get_stats"] = "❌ FAIL: Invalid stats format"
     except Exception as e:
         results["get_stats"] = f"❌ FAIL: {e}"
 
@@ -254,7 +254,9 @@ async def main(run_benchmark: bool = False):
                 print("   ✅ solid_cache_entries 테이블이 존재합니다\n")
             else:
                 print("   ❌ solid_cache_entries 테이블이 존재하지 않습니다")
-                print("   💡 마이그레이션을 실행하세요: scripts/migrations/005_add_solid_cache.sql\n")
+                print(
+                    "   💡 마이그레이션을 실행하세요: scripts/migrations/005_add_solid_cache.sql\n"
+                )
                 return
 
             # 2. 인덱스 확인

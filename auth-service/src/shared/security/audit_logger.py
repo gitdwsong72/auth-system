@@ -6,7 +6,7 @@ All security-critical events (authentication, authorization, user management) sh
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
@@ -134,7 +134,7 @@ class AuditLogger:
             metadata,
             status,
             error_message,
-            datetime.now(timezone.utc),
+            datetime.now(UTC),
         )
 
         return result
@@ -167,6 +167,7 @@ class AuditLogger:
 
 
 # Convenience functions for common audit events
+
 
 async def log_login_attempt(
     connection: asyncpg.Connection,

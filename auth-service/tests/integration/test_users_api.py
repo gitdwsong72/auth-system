@@ -15,6 +15,7 @@ class TestUsersAPI:
         """회원가입 성공"""
         # Arrange - 고유한 이메일/유저명 사용
         import uuid
+
         unique_id = str(uuid.uuid4())[:8]
         payload = {
             "email": f"newuser-{unique_id}@example.com",
@@ -106,6 +107,7 @@ class TestUsersAPI:
         """비밀번호 변경 성공"""
         # Arrange - 회원가입 (고유한 이메일/유저명 사용)
         import uuid
+
         unique_id = str(uuid.uuid4())[:8]
         email = f"changepass-{unique_id}@example.com"
         register_payload = {

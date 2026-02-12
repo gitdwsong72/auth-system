@@ -1,7 +1,7 @@
 """Authentication Repository 단위 테스트"""
 
 from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -185,8 +185,7 @@ class TestRevokeRefreshToken:
 
         with patch("src.domains.authentication.repository.sql.load_command") as mock_sql:
             mock_sql.return_value = (
-                "UPDATE refresh_tokens SET revoked_at = NOW() "
-                "WHERE token_hash = $1 RETURNING *"
+                "UPDATE refresh_tokens SET revoked_at = NOW() " "WHERE token_hash = $1 RETURNING *"
             )
 
             # Act
@@ -203,8 +202,7 @@ class TestRevokeRefreshToken:
 
         with patch("src.domains.authentication.repository.sql.load_command") as mock_sql:
             mock_sql.return_value = (
-                "UPDATE refresh_tokens SET revoked_at = NOW() "
-                "WHERE token_hash = $1 RETURNING *"
+                "UPDATE refresh_tokens SET revoked_at = NOW() " "WHERE token_hash = $1 RETURNING *"
             )
 
             # Act
@@ -229,8 +227,7 @@ class TestRevokeAllUserTokens:
 
         with patch("src.domains.authentication.repository.sql.load_command") as mock_sql:
             mock_sql.return_value = (
-                "UPDATE refresh_tokens SET revoked_at = NOW() "
-                "WHERE user_id = $1 RETURNING *"
+                "UPDATE refresh_tokens SET revoked_at = NOW() " "WHERE user_id = $1 RETURNING *"
             )
 
             # Act
@@ -248,8 +245,7 @@ class TestRevokeAllUserTokens:
 
         with patch("src.domains.authentication.repository.sql.load_command") as mock_sql:
             mock_sql.return_value = (
-                "UPDATE refresh_tokens SET revoked_at = NOW() "
-                "WHERE user_id = $1 RETURNING *"
+                "UPDATE refresh_tokens SET revoked_at = NOW() " "WHERE user_id = $1 RETURNING *"
             )
 
             # Act

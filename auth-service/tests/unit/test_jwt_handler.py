@@ -509,9 +509,7 @@ class TestJWTHandlerRSAKeyValidation:
         from src.shared.security.config import SecuritySettings
 
         public_key_file = tmp_path / "public.pem"
-        public_key_file.write_text(
-            "-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----"
-        )
+        public_key_file.write_text("-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----")
 
         # Act & Assert
         with pytest.raises(RuntimeError, match="RSA private key file not found in production"):
@@ -534,9 +532,7 @@ class TestJWTHandlerRSAKeyValidation:
         from src.shared.security.config import SecuritySettings
 
         private_key_file = tmp_path / "private.pem"
-        private_key_file.write_text(
-            "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----"
-        )
+        private_key_file.write_text("-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----")
 
         # Act & Assert
         with pytest.raises(RuntimeError, match="RSA public key file not found in production"):

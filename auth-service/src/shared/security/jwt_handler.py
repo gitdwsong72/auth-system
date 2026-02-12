@@ -46,6 +46,7 @@ class JWTHandler:
                         ) from e
                     # 개발 환경에서는 경고만 출력
                     import logging
+
                     logging.warning(f"Failed to load RSA private key: {e}. Falling back to HS256")
             elif is_production:
                 # 프로덕션에서는 파일 없으면 즉시 실패 (config 검증을 통과했다면 이 코드는 실행되지 않아야 함)
@@ -66,6 +67,7 @@ class JWTHandler:
                         ) from e
                     # 개발 환경에서는 경고만 출력
                     import logging
+
                     logging.warning(f"Failed to load RSA public key: {e}. Falling back to HS256")
             elif is_production:
                 # 프로덕션에서는 파일 없으면 즉시 실패

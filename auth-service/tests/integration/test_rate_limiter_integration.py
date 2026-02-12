@@ -55,15 +55,15 @@ class TestBasicRateLimiting:
         # Assert
         # 첫 3개는 rate limit을 통과 (실제 응답은 201 또는 400 등)
         rate_limited_before_limit = sum(1 for r in responses[:max_requests] if r.status_code == 429)
-        assert rate_limited_before_limit == 0, (
-            f"First {max_requests} requests should not be rate limited"
-        )
+        assert (
+            rate_limited_before_limit == 0
+        ), f"First {max_requests} requests should not be rate limited"
 
         # 나머지는 429
         for i, response in enumerate(responses[max_requests:], start=max_requests):
-            assert response.status_code == 429, (
-                f"Request {i} should be rate limited but got {response.status_code}"
-            )
+            assert (
+                response.status_code == 429
+            ), f"Request {i} should be rate limited but got {response.status_code}"
             data = response.json()
             assert data["error_code"] == "RATE_LIMIT_001"
             assert "너무 많은 요청" in data["message"]

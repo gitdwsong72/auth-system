@@ -6,7 +6,7 @@
 import asyncio
 import hashlib
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import asyncpg
 
@@ -213,7 +213,7 @@ async def _save_login_success(
         user_agent: User-Agent
     """
     token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
-    refresh_token_expires = datetime.now(timezone.utc) + timedelta(days=7)
+    refresh_token_expires = datetime.now(UTC) + timedelta(days=7)
 
     async with transaction(connection):
         # Acquire advisory lock for this user to prevent concurrent login race conditions
@@ -304,7 +304,7 @@ async def _rotate_refresh_token(
         device_info: 디바이스 정보
     """
     new_token_hash = hashlib.sha256(new_refresh_token.encode()).hexdigest()
-    refresh_token_expires = datetime.now(timezone.utc) + timedelta(days=7)
+    refresh_token_expires = datetime.now(UTC) + timedelta(days=7)
 
     async with transaction(connection):
         # 기존 토큰 폐기
@@ -438,7 +438,7 @@ async def logout(
     # 액세스 토큰 블랙리스트 추가 (TTL: 만료 시간까지)
     exp = payload.get("exp")
     if exp:
-        ttl = max(0, exp - int(datetime.now(timezone.utc).timestamp()))
+        ttl = max(0, exp - int(datetime.now(UTC).timestamp()))
         await redis_store.blacklist_token(jti, ttl)
 
     # Active Token 목록에서 제거

@@ -6,6 +6,7 @@
 import asyncpg
 
 from src.domains.users import repository, schemas
+from src.shared.constants import CacheSettings
 from src.shared.database.transaction import transaction
 from src.shared.exceptions import (
     ConflictException,
@@ -13,7 +14,6 @@ from src.shared.exceptions import (
     UnauthorizedException,
     ValidationException,
 )
-from src.shared.constants import CacheSettings
 from src.shared.security.password_hasher import password_hasher
 from src.shared.security.redis_store import redis_store
 

@@ -8,7 +8,6 @@ import ipaddress
 
 from fastapi import Request
 
-
 # Trusted proxies (RFC1918 private ranges + localhost)
 # Only trust X-Forwarded-For from these IPs
 TRUSTED_PROXIES = [

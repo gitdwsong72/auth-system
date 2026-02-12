@@ -116,7 +116,7 @@ class ErrorMessage:
     CURRENT_PASSWORD_MISMATCH = "현재 비밀번호가 일치하지 않습니다"  # noqa: S105
 
     # Authentication
-    INVALID_CREDENTIALS = "이메일 또는 비밀번호가 올바르지 않습니다"  # noqa: S105
+    INVALID_CREDENTIALS = "이메일 또는 비밀번호가 올바르지 않습니다"
     TOKEN_EXPIRED = "토큰이 만료되었습니다"
     INVALID_TOKEN = "유효하지 않은 토큰입니다"
     ACCOUNT_LOCKED = "계정이 잠겨있습니다 ({minutes}분 후 재시도)"

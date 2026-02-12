@@ -74,9 +74,7 @@ def require_permission(permission: str) -> Callable[..., CurrentUser]:
         if user.is_superuser:
             return user
         if permission not in user.permissions:
-            raise PermissionDeniedError(
-                f"'{permission}' 권한이 필요합니다"
-            )
+            raise PermissionDeniedError(f"'{permission}' 권한이 필요합니다")
         return user
 
     return _check_permission
@@ -111,9 +109,7 @@ def require_roles(*roles: str) -> Callable[..., CurrentUser]:
             return user
         if not any(role in user.roles for role in roles):
             roles_str = ", ".join(roles)
-            raise PermissionDeniedError(
-                f"다음 역할 중 하나가 필요합니다: {roles_str}"
-            )
+            raise PermissionDeniedError(f"다음 역할 중 하나가 필요합니다: {roles_str}")
         return user
 
     return _check_roles

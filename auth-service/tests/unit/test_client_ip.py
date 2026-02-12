@@ -2,8 +2,6 @@
 
 from unittest.mock import MagicMock
 
-import pytest
-
 from src.shared.utils.client_ip import (
     get_client_info,
     get_client_ip,
@@ -97,9 +95,7 @@ class TestGetClientIP:
         # Arrange
         request = MagicMock()
         request.client.host = "127.0.0.1"  # Trusted
-        request.headers = {
-            "X-Forwarded-For": "203.0.113.42, 192.168.1.1, 10.0.0.1"
-        }
+        request.headers = {"X-Forwarded-For": "203.0.113.42, 192.168.1.1, 10.0.0.1"}
 
         # Act
         ip = get_client_ip(request)

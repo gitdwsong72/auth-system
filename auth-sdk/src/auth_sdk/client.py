@@ -96,15 +96,11 @@ class AuthClient:
                 json={"token": token},
             )
         except httpx.ConnectError as e:
-            raise AuthServiceUnavailableError(
-                "인증 서비스에 연결할 수 없습니다"
-            ) from e
+            raise AuthServiceUnavailableError("인증 서비스에 연결할 수 없습니다") from e
         except httpx.TimeoutException as e:
-            raise AuthServiceUnavailableError(
-                "인증 서비스 요청 시간이 초과되었습니다"
-            ) from e
+            raise AuthServiceUnavailableError("인증 서비스 요청 시간이 초과되었습니다") from e
 
-        if response.status_code == 401:  # noqa: PLR2004
+        if response.status_code == 401:
             raise InvalidTokenError("유효하지 않은 토큰입니다")
 
         response.raise_for_status()
@@ -131,15 +127,11 @@ class AuthClient:
                 f"/api/v1/users/{user_id}/permissions/{permission}",
             )
         except httpx.ConnectError as e:
-            raise AuthServiceUnavailableError(
-                "인증 서비스에 연결할 수 없습니다"
-            ) from e
+            raise AuthServiceUnavailableError("인증 서비스에 연결할 수 없습니다") from e
         except httpx.TimeoutException as e:
-            raise AuthServiceUnavailableError(
-                "인증 서비스 요청 시간이 초과되었습니다"
-            ) from e
+            raise AuthServiceUnavailableError("인증 서비스 요청 시간이 초과되었습니다") from e
 
-        if response.status_code == 404:  # noqa: PLR2004
+        if response.status_code == 404:
             return False
 
         response.raise_for_status()
@@ -164,15 +156,11 @@ class AuthClient:
                 f"/api/v1/users/{user_id}",
             )
         except httpx.ConnectError as e:
-            raise AuthServiceUnavailableError(
-                "인증 서비스에 연결할 수 없습니다"
-            ) from e
+            raise AuthServiceUnavailableError("인증 서비스에 연결할 수 없습니다") from e
         except httpx.TimeoutException as e:
-            raise AuthServiceUnavailableError(
-                "인증 서비스 요청 시간이 초과되었습니다"
-            ) from e
+            raise AuthServiceUnavailableError("인증 서비스 요청 시간이 초과되었습니다") from e
 
-        if response.status_code == 404:  # noqa: PLR2004
+        if response.status_code == 404:
             raise AuthenticationError(f"사용자를 찾을 수 없습니다: {user_id}")
 
         response.raise_for_status()
@@ -199,13 +187,9 @@ class AuthClient:
                 json={"token": token},
             )
         except httpx.ConnectError as e:
-            raise AuthServiceUnavailableError(
-                "인증 서비스에 연결할 수 없습니다"
-            ) from e
+            raise AuthServiceUnavailableError("인증 서비스에 연결할 수 없습니다") from e
         except httpx.TimeoutException as e:
-            raise AuthServiceUnavailableError(
-                "인증 서비스 요청 시간이 초과되었습니다"
-            ) from e
+            raise AuthServiceUnavailableError("인증 서비스 요청 시간이 초과되었습니다") from e
 
         response.raise_for_status()
         return TokenIntrospectionResponse.model_validate(response.json())

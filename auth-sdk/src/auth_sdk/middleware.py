@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 from auth_sdk.config import AuthConfig
-from auth_sdk.exceptions import AuthSDKError, AuthenticationError, InvalidTokenError
+from auth_sdk.exceptions import AuthenticationError, AuthSDKError
 from auth_sdk.jwks import JWKSClient
 from auth_sdk.models import CurrentUser, TokenPayload
 
@@ -89,8 +89,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
             raise AuthenticationError("Authorization 헤더가 없습니다")
 
         parts = authorization.split(" ")
-        if len(parts) != 2 or parts[0].lower() != "bearer":  # noqa: PLR2004
-            raise AuthenticationError("Authorization 헤더 형식이 잘못되었습니다. 'Bearer <token>' 형식을 사용하세요")
+        if len(parts) != 2 or parts[0].lower() != "bearer":
+            raise AuthenticationError(
+                "Authorization 헤더 형식이 잘못되었습니다. 'Bearer <token>' 형식을 사용하세요"
+            )
 
         return parts[1]
 
@@ -111,9 +113,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             permissions=payload.permissions,
         )
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         """미들웨어 요청 처리 로직.
 
         공개 경로는 인증을 건너뛰고, 그 외 경로에서는
@@ -153,7 +153,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 status_code=e.status_code,
                 content={"detail": e.message},
             )
-        except Exception as e:
+        except Exception:
             logger.exception("인증 처리 중 예기치 않은 오류 발생")
             return JSONResponse(
                 status_code=401,

@@ -1,7 +1,6 @@
 """pytest fixtures."""
 
 import contextlib
-import os
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime, timedelta
 from typing import Any

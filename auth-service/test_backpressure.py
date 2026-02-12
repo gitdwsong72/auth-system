@@ -7,19 +7,17 @@ Usage:
 """
 
 import asyncio
-import httpx
 import time
 from collections import Counter
+
+import httpx
 
 
 async def make_request(client: httpx.AsyncClient, index: int) -> dict:
     """단일 요청"""
     try:
         start = time.time()
-        response = await client.get(
-            "http://localhost:8000/api/v1/health",
-            timeout=10.0
-        )
+        response = await client.get("http://localhost:8000/api/v1/health", timeout=10.0)
         duration = time.time() - start
 
         return {
@@ -48,10 +46,7 @@ async def test_backpressure(concurrent_requests: int):
 
     async with httpx.AsyncClient() as client:
         # 동시 요청 발송
-        tasks = [
-            make_request(client, i)
-            for i in range(concurrent_requests)
-        ]
+        tasks = [make_request(client, i) for i in range(concurrent_requests)]
 
         start_time = time.time()
         results = await asyncio.gather(*tasks)
@@ -63,14 +58,14 @@ async def test_backpressure(concurrent_requests: int):
     waited = [r for r in results if r.get("wait_time")]
 
     # 출력
-    print(f"\n📊 결과:")
+    print("\n📊 결과:")
     print(f"  총 소요 시간: {total_time:.2f}초")
-    print(f"\n  응답 상태:")
+    print("\n  응답 상태:")
     for status, count in sorted(status_counts.items()):
         print(f"    {status}: {count}개")
 
     if durations:
-        print(f"\n  응답 시간:")
+        print("\n  응답 시간:")
         print(f"    평균: {sum(durations)/len(durations):.3f}초")
         print(f"    최소: {min(durations):.3f}초")
         print(f"    최대: {max(durations):.3f}초")
@@ -97,11 +92,10 @@ async def test_backpressure(concurrent_requests: int):
         else:
             print("   ⚠️  FAIL: 성공률 낮음")
 
+    elif status_counts.get(503, 0) > 0:
+        print("   ✅ PASS: 과부하 거부 동작 확인")
     else:
-        if status_counts.get(503, 0) > 0:
-            print("   ✅ PASS: 과부하 거부 동작 확인")
-        else:
-            print("   ⚠️  UNEXPECTED: 과부하인데 거부 안 됨")
+        print("   ⚠️  UNEXPECTED: 과부하인데 거부 안 됨")
 
 
 async def main():
