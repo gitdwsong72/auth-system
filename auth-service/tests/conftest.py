@@ -14,7 +14,8 @@ from dotenv import load_dotenv
 from httpx import ASGITransport, AsyncClient
 
 # Load test environment variables before importing app
-load_dotenv(".env.test", override=True)
+# override=False allows CI environment variables to take precedence
+load_dotenv(".env.test", override=False)
 
 from src.main import app
 from src.shared.security.config import SecuritySettings
